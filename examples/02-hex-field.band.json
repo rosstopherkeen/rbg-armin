@@ -1,0 +1,147 @@
+{
+ "name": "02-hex-field",
+ "savedAt": 1787207947138,
+ "app": "rubber-band-gen",
+ "state": {
+  "seed": 3390,
+  "canvas": {
+   "w": 1000,
+   "h": 1400,
+   "margin": 90
+  },
+  "grid": {
+   "cols": 22,
+   "rows": 30,
+   "lattice": "hex",
+   "stagger": 0.5,
+   "jitter": 0,
+   "rot": 0,
+   "ox": 0,
+   "oy": 0,
+   "rad": 0.34,
+   "radJit": 0
+  },
+  "mask": {
+   "on": 0,
+   "src": null,
+   "name": "",
+   "fit": "contain",
+   "scale": 1,
+   "ox": 0,
+   "oy": 0,
+   "rot": 0,
+   "thr": 0.5,
+   "invert": 0,
+   "feather": 0.15,
+   "roleSelect": 1,
+   "roleDensity": 0,
+   "density": 1,
+   "ghost": 1,
+   "ghostOp": 0.18
+  },
+  "pinGen": {
+   "mode": "random",
+   "count": 11,
+   "minSep": 3,
+   "order": "angular"
+  },
+  "pins": [
+   {
+    "col": 6,
+    "row": 1,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 11,
+    "row": 0,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 11,
+    "row": 3,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 14,
+    "row": 1,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 21,
+    "row": 1,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 20,
+    "row": 4,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 20,
+    "row": 12,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 12,
+    "row": 13,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 12,
+    "row": 28,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 5,
+    "row": 24,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 1,
+    "row": 14,
+    "rr": 0.34,
+    "wrap": 0,
+    "manual": false
+   }
+  ],
+  "band": {
+   "flip": 0,
+   "offset": 0,
+   "closed": 1
+  },
+  "render": {
+   "mode": "outline",
+   "weight": 9,
+   "fill": "#141410",
+   "stroke": "#141410",
+   "ground": "#efe9d9",
+   "showNodes": 1,
+   "showCircles": 0,
+   "showTangents": 0,
+   "showIndex": 0,
+   "showWrap": 0,
+   "showGhost": 1,
+   "showMargin": 1
+  }
+ }
+}

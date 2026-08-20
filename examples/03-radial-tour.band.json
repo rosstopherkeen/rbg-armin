@@ -1,0 +1,126 @@
+{
+ "name": "03-radial-tour",
+ "savedAt": 1787207947138,
+ "app": "rubber-band-gen",
+ "state": {
+  "seed": 1207,
+  "canvas": {
+   "w": 1200,
+   "h": 1200,
+   "margin": 120
+  },
+  "grid": {
+   "cols": 24,
+   "rows": 9,
+   "lattice": "radial",
+   "stagger": 0,
+   "jitter": 0,
+   "rot": 0,
+   "ox": 0,
+   "oy": 0,
+   "rad": 0.3,
+   "radJit": 0.5
+  },
+  "mask": {
+   "on": 0,
+   "src": null,
+   "name": "",
+   "fit": "contain",
+   "scale": 1,
+   "ox": 0,
+   "oy": 0,
+   "rot": 0,
+   "thr": 0.5,
+   "invert": 0,
+   "feather": 0.15,
+   "roleSelect": 1,
+   "roleDensity": 0,
+   "density": 1,
+   "ghost": 1,
+   "ghostOp": 0.18
+  },
+  "pinGen": {
+   "mode": "random",
+   "count": 8,
+   "minSep": 2,
+   "order": "nn"
+  },
+  "pins": [
+   {
+    "col": 9,
+    "row": 6,
+    "rr": 0.32277259023394433,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 7,
+    "row": 3,
+    "rr": 0.340775074576959,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 6,
+    "row": 1,
+    "rr": 0.4212513414211571,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 12,
+    "row": 4,
+    "rr": 0.16837939142715186,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 16,
+    "row": 6,
+    "rr": 0.20525887047406285,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 22,
+    "row": 5,
+    "rr": 0.38871021105442194,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 5,
+    "row": 8,
+    "rr": 0.3201540660811588,
+    "wrap": 0,
+    "manual": false
+   },
+   {
+    "col": 7,
+    "row": 8,
+    "rr": 0.3835490219062194,
+    "wrap": 0,
+    "manual": false
+   }
+  ],
+  "band": {
+   "flip": 0,
+   "offset": 0,
+   "closed": 0
+  },
+  "render": {
+   "mode": "outline",
+   "weight": 14,
+   "fill": "#141410",
+   "stroke": "#141410",
+   "ground": "#efe9d9",
+   "showNodes": 1,
+   "showCircles": 1,
+   "showTangents": 0,
+   "showIndex": 0,
+   "showWrap": 0,
+   "showGhost": 1,
+   "showMargin": 1
+  }
+ }
+}
