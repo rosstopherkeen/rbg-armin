@@ -1,5 +1,11 @@
 # Rubber Band Generator
 
+> [!NOTE]
+> **This repository is a read-only public mirror.** The Rubber Band Generator is now developed
+> in a private collection of graphic tools, and each update is pushed here with its full history.
+> Issues are welcome here. Pull requests can't be merged directly, but the changes they propose
+> can be carried over by hand.
+
 A shape generator for Armin Hofmann–style **rubber band forms**: circles on a grid, a taut band
 wrapped around a chosen few, resolved into one closed path of arcs and tangent lines.
 
