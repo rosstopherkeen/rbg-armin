@@ -244,3 +244,12 @@ MIT — see [LICENSE](LICENSE).
 
 Armin Hofmann's work is the source of the form language; this is a tool for exploring it, not a
 reproduction of his designs.
+
+<br/>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/brand/made-in-bengaluru-white.png" />
+    <img src="./docs/brand/made-in-bengaluru-black.png" height="56" alt="Made in Bengaluru." />
+  </picture>
+</p>
