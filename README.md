@@ -6,8 +6,8 @@
 > Issues are welcome here. Pull requests can't be merged directly, but the changes they propose
 > can be carried over by hand.
 
-A shape generator for Armin Hofmann–style **rubber band forms**: circles on a grid, a taut band
-wrapped around a chosen few, resolved into one closed path of arcs and tangent lines.
+A playground for Armin Hofmann's **rubber band forms**: pin circles on an endless grid, and a taut
+band wraps around them, resolved into one closed path of arcs and tangent lines.
 
 One HTML file. No build step, no dependencies, no network. Open it and it runs.
 
@@ -33,14 +33,14 @@ stretch a rubber band around them, and the band finds its own form — straight 
 curved where it wraps. Change a pin's position or thickness and the whole silhouette
 reorganises.
 
-This tool does that with real geometry rather than by eye. Every segment between two pins is
-solved as a tangent line; every pin is an arc the band actually wraps. The result is a single
-path you can export and cut, plot, or print.
+This tool lets you play with that directly. Tap circles on the grid to pin them, drag them, make
+them bigger or smaller, and flip the band around a pin or tuck it in, and watch the shape
+re-form as you go. Underneath, it is real geometry rather than drawing by eye: every segment
+between two pins is solved as a tangent line, every pin is an arc the band actually wraps, and
+the result is a single path you can export and cut, plot, or print.
 
 The algorithm follows the approach worked out in
 [this Processing forum thread](https://discourse.processing.org/t/shape-generator-help-armin-hofmanns-rubber-band-shape-generator/33190).
-The interface borrows its visual language — cream ground, monospace, hairlines, flat colour
-chips — from Giorgio Sancristoforo's [*Ooame*](https://www.giorgiosancristoforo.net/ooame/).
 
 ---
 
@@ -64,68 +64,62 @@ direction of `s`. The same numbers drive the canvas `arc()` and the SVG `A` comm
 (`sweep-flag = s > 0`), so what you see and what you export cannot drift apart.
 
 **Wrap signs default to auto:** `s_i = sign(cross(p_i - p_{i-1}, p_{i+1} - p_i))` — the turn
-direction at that pin. Convex turns wrap one way, concave the other. Override any pin by hand.
+direction at that pin. Corners that stick out get the band **around** them; dents get it
+**tucked in**. Flip any pin by hand to override it.
 
 **When `D < |k|` no tangent exists** — one circle swallows the other for that combination of
-signs. That edge is drawn as a red dashed link and counted in the status bar. Shrink a pin, move
-the pins apart, or flip a wrap sign.
+signs. That pair is linked by a red dashed line, and the pins panel says so in plain words.
+Move the pins apart, make one smaller, or flip one.
 
-Everything is computed as a pipeline, and the interface is laid out in the same order:
+Everything is computed as a pipeline:
 
 ```
-nodes  ->  mask  ->  pin selection  ->  ordering  ->  band solve
+grid  ->  mask  ->  pin selection  ->  ordering  ->  band solve
 ```
 
-Changing a mask threshold invalidates everything downstream of the mask; changing the band
-offset invalidates only the final solve.
+Changing a mask threshold invalidates everything downstream of the mask; changing a colour or
+**Grow pins by** invalidates only the final solve.
 
 ---
 
 ## The interface
 
-The artboard sits between the two things that make it. **Left builds the field** — page, grid,
-mask. **Right builds the band** — pins, wrap, render. Canvas actions live on the canvas.
+The canvas is an endless grid of circles, each one a spot you can pin. Scroll to move around;
+⌘ + scroll or pinch to zoom. Everything else floats on top:
+
+- **The toolbar** (bottom centre) holds the tools and the everyday actions: Select, Add, Flip,
+  Erase, Pan · undo, redo · Shuffle, Clear · zoom, fit · import / export · how it works. Hover any
+  button for its name and shortcut.
+- **The pins panel** (left) lists the pins in band order. Click to select, drag ⠿ to change the
+  order, ✕ to remove.
+- **The design panel** (right) shows the selected pin (its size, and whether the band goes
+  around it, tucks in, or decides on its own), then Shuffle, Grid, Band and Colour. Everything
+  else — lattice, stagger, jitter, band order, the mask, export padding — is under
+  **Advanced Controls**.
+
+Pins are drawn as marks on a drawing: a hairline ring with a node at the centre. A dot in the
+node means auto, a solid node means around, an open ring means tucked in. Select a pin and a
+knob appears on its rim; drag it to resize.
 
 ### Masks
 
-Load a solid black SVG or PNG and the grid obeys it. Ink coverage is sampled per node as
-`alpha × (1 − luminance)`, so black-on-white and black-on-transparent both read as solid; invert
-for white-on-black art. Two roles, independently toggleable:
+Under **Advanced Controls → Mask**, load a solid black SVG or PNG and the grid obeys it. The image
+sits centred on the canvas origin at its own size; move it with **Position**, size it with
+**Scale**. Ink coverage is sampled per circle as `alpha × (1 − luminance)`, so black-on-white and
+black-on-transparent both read as solid; invert for white-on-black art. Two roles, independently
+toggleable:
 
-- **Select** — a circle exists only where coverage exceeds the threshold.
+- **Select** — a circle can be pinned only where coverage exceeds the threshold.
 - **Density** — circles are dithered out by coverage:
-  `p = clamp((v − (thr − feather)) / 2·feather) × density`, compared against a per-node seeded
+  `p = clamp((v − (thr − feather)) / 2·feather) × density`, compared against a per-circle seeded
   random. Deterministic, so re-rolling the seed changes the scatter and nothing else.
 
 ![Mask-driven shape](docs/mask.png)
 
-### Construction view
+### One undo
 
-Every construction layer toggles independently — nodes, circles, tangent points, pin indices,
-wrap arcs, mask ghost — so you can see exactly what the solver did.
-
-![Construction overlay](docs/construction.png)
-
-Colour is a legend, not decoration. Each pipeline stage owns a hue that appears in three places
-at once: the section marker, the controls inside it, and the layer it draws on the canvas.
-
-| stage | hue | on canvas |
-|---|---|---|
-| Grid | magenta | node dots, construction circles |
-| Mask | green | nodes the mask removed |
-| Pins | teal | pin rings, indices, cw tangent points |
-| selection / error | red | selected pins, ccw wraps, impossible tangents |
-
-### Two histories
-
-Deliberately separate, because they answer different questions:
-
-- **Pin history** — the `⟲ ⟳` on the canvas bar. Every mutation of the pin set lands here no
-  matter what caused it: canvas clicks, the ✕ badge, list edits, Regenerate, Clear.
-- **Parameter history** — the `⟲ ⟳` in the top bar, and ⌘Z / ⇧⌘Z. Whole-document snapshots for
-  panel controls, mask loads, resets.
-
-Tuning a slider never eats your pin work.
+⌘Z and ⇧⌘Z (and the toolbar arrows) step back and forward through everything in the order you
+did it: pin edits and settings alike.
 
 ---
 
@@ -133,53 +127,53 @@ Tuning a slider never eats your pin work.
 
 | input | action |
 |---|---|
-| click empty node | add a pin (marked `*`, kept through regeneration) |
-| hover a pin | ✕ badge appears — click it to remove that pin |
-| click pin · shift-click | select · extend selection |
-| drag empty area | marquee select |
+| `V` | Select: click a pin to select, ⇧-click to add or remove, drag empty space for a box |
+| `P` | Add: click an empty circle to pin it; stays in Add so you can keep going |
+| `F` | Flip the selected pins (around ↔ tucked in); with nothing selected, the Flip tool |
+| `E` | Erase: click or drag over pins to remove them |
+| `H` · space-drag · middle-drag | pan |
 | drag a pin | move it (moves the whole selection) |
-| drag the square handle | radius |
-| wheel | zoom · `0` fits · `+` / `−` step |
-| space-drag or middle-drag | pan |
-| alt-click | delete pin |
-| `[` `]` | cycle wrap on the selection: auto → cw → ccw |
-| ⌫ | delete selection · `Esc` deselect |
-| `R` | regenerate pins |
-| ⌘Z / ⇧⌘Z | parameter undo / redo |
-| ⌘S / ⌘O | save / open |
-
-Panel sections collapse; below 980px the left panel folds behind the ☰ toggle.
+| drag the knob on a pin's rim | resize |
+| ⌥-drag a pin | drag a copy |
+| arrow keys · ⇧ + arrows | nudge the selection one grid step · five |
+| ⌘A | select all pins |
+| ⌫ | remove the selected pins |
+| `Esc` | close a menu · back to Select · deselect · cancel a drag |
+| right-click | Flip / Remove on a pin; Select all / Shuffle / Fit / 100% on the canvas |
+| `S` | Shuffle: new random pins |
+| scroll · ⌘ + scroll or pinch | pan · zoom |
+| ⌘+ / ⌘− · ⇧1 · ⇧0 | zoom · fit the shape · 100% |
+| ⌘Z / ⇧⌘Z | undo / redo |
+| ⇧⌘E · ⌘O | import / export menu · import a project file |
+| ⌘\ | show / hide the panels |
+| `?` | how it works |
 
 ---
 
-## Documents and exports
+## Import and export
 
-![Documents](docs/documents.png)
+Your work autosaves in the browser and comes back when you reopen the page.
 
-**SAVE** (⌘S) writes to the current named document; **DOC ▾** lists them, with open, rename, and
-delete. Documents live in `localStorage`, separate from the crash-recovery autosave that runs
-continuously.
+The **import / export** menu in the toolbar has:
 
-**SAVE AS FILE… / OPEN FILE…** (⌘O) read and write a `.band.json` carrying the whole document —
-the mask image travels inside it as a data URL, so a saved file is self-contained and portable.
-In Chrome and Edge the File System Access API lets ⌘S overwrite the same file in place; the `▪`
-beside the document name means a file is linked. Safari and Firefox fall back to a download and
-a file picker.
-
-**SVG / PNG / JSON** are exports — artwork out, sized to the artboard, with no UI chrome. The SVG
-is a single `<path>` of `A` and `L` commands, ready for Illustrator or a plotter.
+- **SVG (vector)** and **PNG image** — artwork out, cropped to the band plus the padding set under
+  Advanced Controls, with no UI. The SVG is a single `<path>` of `A` and `L` commands, ready for
+  Illustrator or a plotter.
+- **Project file (.json)** — the whole state, mask image included as a data URL, so a file is
+  self-contained and portable. **Import** loads one back; files from older versions of the tool
+  open too.
 
 ---
 
 ## Examples
 
-Open these with **DOC ▾ → OPEN FILE…**:
+Open these with **import / export → Import**:
 
 | file | shows |
 |---|---|
-| [`01-blob-mask`](examples/01-blob-mask.band.json) | a mask driving both roles — select carves the silhouette, density dithers the field — with hull-ordered pins tracing the edge |
-| [`02-hex-field`](examples/02-hex-field.band.json) | hex lattice, eleven random pins with a minimum separation, drawn as a heavy outline |
-| [`03-radial-tour`](examples/03-radial-tour.band.json) | radial lattice with varied radii, nearest-neighbour ordering, and an open band rather than a closed one |
+| [`01-blob-mask`](examples/01-blob-mask.band.json) | a mask driving both roles — select carves the silhouette, density dithers the field — with outline-ordered pins tracing the edge |
+| [`02-hex-field`](examples/02-hex-field.band.json) | hex lattice, eleven random pins with a minimum spread, drawn as a heavy line |
+| [`03-radial-tour`](examples/03-radial-tour.band.json) | radial lattice with varied sizes, nearest-next ordering, and an open band rather than a closed one |
 
 The first one embeds its own mask, so it loads complete.
 
@@ -187,13 +181,9 @@ The first one embeds its own mask, so it loads complete.
 
 ## Making it yours
 
-- **Colour, type, spacing** — every value is a CSS custom property in the `:root` block at the
-  top of `index.html`. Edit that block; nothing else hard-codes a colour.
-- **Stage hues** — the `STAGECOL` map, mirrored by `INK` for canvas drawing.
-- **Section glyphs** — `GLYPH` holds one 5×5 bitmap per section (page frame, lattice, solid
-  field, circle-and-pin, band-around-two, ink-against-paper); `LETTER` holds the 5×7 forms that
-  spell the logo. They render through `bitmapURL()` as inline SVG. Redraw them by editing the
-  `1`s and `0`s.
+Colours, spacing and sizes are CSS custom properties in the `:root` block at the top of
+`index.html`. The band, pin and canvas colours are in the Colour panel and travel with each
+project file.
 
 ---
 
@@ -201,25 +191,19 @@ The first one embeds its own mask, so it loads complete.
 
 Works in any current browser, straight from `file://` — no server needed.
 
-| | Chrome / Edge | Safari / Firefox |
-|---|---|---|
-| Everything except save-in-place | ✅ | ✅ |
-| ⌘S overwrites the same file | ✅ | download fallback |
-| Open a `.band.json` | picker | file input |
-
 ---
 
 ## Why not a desktop or terminal app?
 
-**Terminal: no.** This is direct manipulation of continuous geometry — drag a pin onto a node,
-drag a radius handle, marquee a selection, watch the arcs re-solve at 47% zoom. A TUI gives you
-character cells; you would be typing coordinates at a preview you cannot trust.
+**Terminal: no.** This is direct manipulation of continuous geometry — drag a pin onto a circle,
+drag its rim, box-select, watch the arcs re-solve as you zoom. A TUI gives you character cells;
+you would be typing coordinates at a preview you cannot trust.
 
 **Tauri or Electron: packaging, not capability.** A wrapper would add a dock icon, native menus,
-and a `.band.json` file association. It would also add a Rust or Node toolchain, a build step,
-per-platform packaging, code signing and notarization for distribution, and a CI matrix — on a
-tool that is currently one file you double-click. The web platform already covers the real
-needs: File System Access for save-in-place, canvas for rendering, `localStorage` for documents.
+and a file association. It would also add a Rust or Node toolchain, a build step, per-platform
+packaging, code signing and notarization for distribution, and a CI matrix — on a tool that is
+currently one file you double-click. The web platform already covers the real needs: canvas for
+rendering, file import and download, `localStorage` for autosave.
 
 If the dock icon ever becomes worth it, Tauri wraps `index.html` unchanged. Nothing here has to
 be rewritten for that to happen, which is exactly why it can wait.
@@ -228,12 +212,12 @@ be rewritten for that to happen, which is exactly why it can wait.
 
 ## Known limits
 
-- **Self-intersections are detected, not fixed.** Crossings between straight tangent segments are
-  counted in the status bar; hull or angular ordering avoids them in most layouts, but a
-  hand-ordered band that crosses itself renders as authored.
+- **Self-intersections are detected, not fixed.** When straight segments cross, the pins panel
+  says so; most band orders avoid it, but a hand-ordered band that crosses itself renders as
+  authored.
 - **Mask roles `radius` and `route` are not implemented** — radius-from-coverage needs a distance
   transform, contour routing needs marching squares.
-- **Radii larger than the pin spacing produce tangent errors by construction.** That is the
+- **Pins bigger than the gap between them produce tangent errors by construction.** That is the
   `D >= |k|` condition doing its job, not a bug.
 
 ---

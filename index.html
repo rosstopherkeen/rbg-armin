@@ -1612,17 +1612,22 @@ function scheduleSave(){
     }
   },350);
 }
+/* a saved state with any missing settings filled from the defaults, so files and
+   autosaves from older versions (which lack e.g. grid spacing) still open */
+function withDefaults(st){
+  const d=defaults();
+  return Object.assign(d,st,{
+    grid:Object.assign(d.grid,st.grid),
+    mask:Object.assign(d.mask,st.mask),pinGen:Object.assign(d.pinGen,st.pinGen),
+    band:Object.assign(d.band,st.band),render:Object.assign(d.render,st.render)
+  });
+}
 function restore(){
   try{
     const raw=localStorage.getItem(KEY);if(!raw)return false;
     const st=JSON.parse(raw);
     if(!st||!st.grid||!Array.isArray(st.pins))return false;
-    const d=defaults();
-    S=Object.assign(d,st,{
-      grid:Object.assign(d.grid,st.grid),
-      mask:Object.assign(d.mask,st.mask),pinGen:Object.assign(d.pinGen,st.pinGen),
-      band:Object.assign(d.band,st.band),render:Object.assign(d.render,st.render)
-    });
+    S=withDefaults(st);
     return true;
   }catch(e){return false;}
 }
@@ -1635,7 +1640,7 @@ function loadDocJSON(txt){
     const d=JSON.parse(txt);
     const st=d&&d.state?d.state:d;          /* older saves wrap the state; exports are the state */
     if(!st||!st.grid||!Array.isArray(st.pins))return false;
-    pushUndo();applyState(JSON.stringify(st),true);
+    pushUndo();applyState(JSON.stringify(withDefaults(st)),true);
     viewTouched=false;fitView();draw();
     return true;
   }catch(e){return false;}
