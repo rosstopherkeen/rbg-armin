@@ -744,7 +744,9 @@ function draw(){
   if(R.showNodes){
     ctx.lineWidth=hair;
     /* construction hairlines: garden-city's edge grey, kept faint */
-    ctx.strokeStyle="rgba(138,137,132,.32)";ctx.stroke(rings);
+    ctx.strokeStyle="rgba(138,137,132,.32)";
+    if(stride===1)ctx.stroke(cellPath(a,b));
+    ctx.stroke(rings);
     ctx.fillStyle="rgba(138,137,132,.45)";ctx.fill(dots);
     ctx.save();ctx.setLineDash([3/z,3/z]);ctx.strokeStyle="rgba(138,137,132,.14)";ctx.stroke(dropped);ctx.restore();
   }
@@ -821,6 +823,44 @@ function draw(){
   paintStatus();
 }
 /* only things worth telling someone, in plain words */
+/* the cell each circle sits in, drawn between circle centres in the lattice's own
+   frame (so it turns with Rotation): square cells, brick rows where rows are
+   staggered (triangle, hex), rings and spokes for radial. Jitter moves circles,
+   not cells: the cells are the module. */
+function cellPath(a,b){
+  const g=S.grid, sp=g.sp, h=rowH(), P=new Path2D();
+  const ang=g.rot*Math.PI/180, c=Math.cos(-ang), s=Math.sin(-ang);
+  const cs=[[a.x,a.y],[b.x,a.y],[a.x,b.y],[b.x,b.y]].map(([x,y])=>({x:x*c-y*s,y:x*s+y*c}));
+  const rc=Math.cos(ang), rs=Math.sin(ang);
+  const T=(x,y)=>[x*rc-y*rs,x*rs+y*rc];                     /* lattice frame -> canvas */
+  const seg=(x0,y0,x1,y1)=>{const p=T(x0,y0),q=T(x1,y1);P.moveTo(p[0],p[1]);P.lineTo(q[0],q[1]);};
+  if(g.lattice==="radial"){
+    const n=Math.max(3,g.spokes|0);
+    const dmax=Math.max(...cs.map(p=>Math.hypot(p.x,p.y)));
+    const dx=Math.max(a.x,0,-b.x), dy=Math.max(a.y,0,-b.y);
+    const r0=Math.max(0,Math.floor(Math.hypot(dx,dy)/sp)-1), r1=Math.ceil(dmax/sp)+1;
+    for(let r=r0;r<=r1;r++){
+      const R=(r+0.5)*sp;P.moveTo(R,0);P.arc(0,0,R,0,TAU);    /* ring between ring r and r+1 */
+      if(r<1)continue;
+      const off=r*g.stagger*TAU/n;
+      for(let k=0;k<n;k++){                                    /* spokes between neighbours on ring r */
+        const t2=(k+0.5)/n*TAU+off+ang, ca=Math.cos(t2), sa=Math.sin(t2);
+        P.moveTo((r-0.5)*sp*ca,(r-0.5)*sp*sa);P.lineTo(R*ca,R*sa);
+      }
+    }
+    return P;
+  }
+  const st=g.lattice==="square"?g.stagger:(g.stagger||0.5);
+  const bx0=Math.min(...cs.map(p=>p.x))-sp, bx1=Math.max(...cs.map(p=>p.x))+sp;
+  const by0=Math.min(...cs.map(p=>p.y))-h, by1=Math.max(...cs.map(p=>p.y))+h;
+  const r0=Math.floor(by0/h), r1=Math.ceil(by1/h), c0=Math.floor(bx0/sp)-1, c1=Math.ceil(bx1/sp)+1;
+  for(let r=r0;r<=r1;r++){
+    const y=(r-0.5)*h;seg(bx0,y,bx1,y);                       /* the line above row r */
+    const o=st*mod(r,2);
+    for(let k=c0;k<=c1;k++){const x=(k+0.5+o)*sp;seg(x,y,x,y+h);}
+  }
+  return P;
+}
 function paintStatus(){
   const msg=[];
   if(SOL&&SOL.bad)msg.push(SOL.bad===1?"Two pins are too close to join (red dashed line). Move them apart or make one smaller."
@@ -1090,7 +1130,7 @@ function buildPanels(){
   }
 
   sub("Show");
-  adv.appendChild(chkRow("Canvas",chkCtl("Grid circles","render.showNodes"),chkCtl("Pin numbers","render.showIndex")));
+  adv.appendChild(chkRow("Canvas",chkCtl("Grid","render.showNodes"),chkCtl("Pin numbers","render.showIndex")));
   adv.appendChild(chkRow("Mask",chkCtl("Mask image","render.showGhost")));
 
   sub("Export");
